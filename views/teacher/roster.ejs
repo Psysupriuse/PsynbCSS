@@ -1,0 +1,36 @@
+<%- include('../partials/head', { title: '报名名单' }) %>
+<%- include('../partials/teacher-sidebar', { active: 'activities' }) %>
+    <div class="page-head">
+      <h2>报名名单</h2>
+      <a class="btn btn-secondary" href="/teacher/activities">返回活动管理</a>
+    </div>
+    <div class="card">
+      <div class="page-head">
+        <h3><%= activity.title %></h3>
+        <span class="meta">报名人数：<%= students.length %> / <%= activity.max_participants %></span>
+      </div>
+      <p class="meta">活动时间：<%= activity.time %></p>
+      <p class="meta">活动地点：<%= activity.location %></p>
+      <% if (students.length === 0) { %>
+        <div class="empty-state">暂无学生报名</div>
+      <% } else { %>
+        <table class="table">
+          <thead>
+            <tr><th>序号</th><th>学生用户名</th><th>报名时间</th></tr>
+          </thead>
+          <tbody>
+            <% students.forEach((s, i) => { %>
+              <tr>
+                <td><%= i + 1 %></td>
+                <td><%= s.username %></td>
+                <td><%= s.created_at %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      <% } %>
+    </div>
+  </main>
+</div>
+</body>
+</html>

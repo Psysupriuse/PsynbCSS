@@ -115,6 +115,19 @@ router.post('/activities/:id/delete', (req, res) => {
   res.redirect('/teacher/activities');
 });
 
+// FR-12 查看报名名单（仅本人活动，仅展示用户名，V1.0 不导出）
+router.get('/activities/:id/roster', (req, res) => {
+  const activity = loadOwnActivity(req, res);
+  if (!activity) return;
+  const students = getDb().prepare(`
+    SELECT u.username, r.created_at
+    FROM registrations r
+    JOIN users u ON u.id = r.student_id
+    WHERE r.activity_id = ?
+    ORDER BY r.created_at ASC`).all(activity.id);
+  res.render('teacher/roster', { activity, students });
+});
+
 // 个人中心
 router.get('/profile', (req, res) => res.render('teacher/profile'));
 router.post('/profile', auth.changePassword);
