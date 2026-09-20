@@ -1,0 +1,33 @@
+<%- include('partials/head', { title: '注册', bodyClass: 'auth-body' }) %>
+<main class="auth-card">
+  <%- include('partials/flash') %>
+  <header class="auth-school">
+    <h1 class="auth-school-name">华东交通大学</h1>
+    <p class="auth-school-sub">校园活动管理系统</p>
+  </header>
+  <form action="/register" method="POST">
+    <div class="form-group">
+      <label class="form-label" for="username">用户名 <span class="required">*</span></label>
+      <input class="form-input" type="text" id="username" name="username" required>
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="password">密码 <span class="required">*</span></label>
+      <input class="form-input" type="password" id="password" name="password" required>
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="confirm">确认密码 <span class="required">*</span></label>
+      <input class="form-input" type="password" id="confirm" name="confirm" required>
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="role">选择角色 <span class="required">*</span></label>
+      <select class="form-input" id="role" name="role">
+        <option value="student" selected>学生</option>
+        <option value="teacher">教师</option>
+      </select>
+    </div>
+    <button class="btn btn-primary btn-block" type="submit">注册</button>
+  </form>
+  <p class="auth-switch">已有账号？<a href="/login">去登录</a></p>
+</main>
+</body>
+</html>
