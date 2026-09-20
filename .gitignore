@@ -2,3 +2,6 @@ node_modules/
 data/
 .env
 *.log
+
+# 工具产生的临时文件
+.claude/
