@@ -1,0 +1,28 @@
+<%- include('../partials/head', { title: '我的报名' }) %>
+<%- include('../partials/student-nav', { active: 'my' }) %>
+<main class="container">
+  <%- include('../partials/flash') %>
+  <div class="page-head"><h2>我的报名</h2></div>
+  <% if (rows.length === 0) { %>
+    <div class="empty-state">还没有报名任何活动，去首页看看吧</div>
+  <% } else { %>
+    <table class="table">
+      <thead>
+        <tr><th>活动名称</th><th>活动时间</th><th>报名时间</th><th>状态</th><th>操作</th></tr>
+      </thead>
+      <tbody>
+        <% rows.forEach(a => { %>
+          <tr>
+            <td><%= a.title %></td>
+            <td><%= a.time %></td>
+            <td><%= a.registered_at %></td>
+            <td><span class="badge badge-<%= a.status.color %>"><%= a.status.label %></span></td>
+            <td><a class="btn btn-secondary btn-sm" href="/student/activities/<%= a.id %>">查看详情</a></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } %>
+</main>
+</body>
+</html>

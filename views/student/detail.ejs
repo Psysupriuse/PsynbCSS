@@ -15,7 +15,17 @@
     <h3>活动介绍</h3>
     <p><%= activity.description %></p>
     <div class="form-actions">
-      <button class="btn btn-primary" disabled>立即报名（开发中）</button>
+      <% if (activity.registered_by_me) { %>
+        <button class="btn btn-secondary" disabled>已报名，不可重复报名</button>
+      <% } else if (activity.status.key === 'ended') { %>
+        <button class="btn btn-secondary" disabled>活动已结束</button>
+      <% } else if (activity.status.key === 'full') { %>
+        <button class="btn btn-secondary" disabled>报名人数已满</button>
+      <% } else { %>
+        <form action="/student/activities/<%= activity.id %>/register" method="POST">
+          <button class="btn btn-primary" type="submit">立即报名</button>
+        </form>
+      <% } %>
       <a class="btn btn-secondary" href="/student">返回列表</a>
     </div>
   </div>
