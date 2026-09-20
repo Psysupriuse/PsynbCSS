@@ -19,7 +19,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 工作说明
 
-1. **按 9 步计划推进**（docs/04）：每完成一步 → 本地自测 → `git commit`（信息格式 `步骤N: 做了什么`）→ 尝试 `git push origin main`。禁止一次性写完再提交，提交历史必须反映迭代过程。
+1. **按 9 步计划推进**（docs/04）：每完成一步 → 本地自测 → `git commit`（信息格式 `步骤N: 做了什么`）→ 尝试 `git push origin campus-activity`（远程 main 分支是其他项目，勿动）。禁止一次性写完再提交，提交历史必须反映迭代过程。
 2. **每日更新开发日志**：每天工作结束时把"已完成/待办"写入 `devlog/YYYY-MM-DD.md`，无需用户提醒；当天有新的环境问题或决策也一并记录。
 3. **push 受限**：本机直连 github.com 不通（2026-09-20 实测）。每步仍尝试 push，失败则保留本地 commit，日志中记录"待补推"，不要谎报推送成功。
 4. **每次改动后自测**：页面能打开、流程能走通才算该步完成；结果如实记录（通过/未通过）。
