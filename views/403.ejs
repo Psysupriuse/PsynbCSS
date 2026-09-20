@@ -1,0 +1,8 @@
+<%- include('partials/head', { title: '403 无权限' }) %>
+<div class="error-page">
+  <div class="error-code">403</div>
+  <div class="error-text"><%= typeof message !== 'undefined' ? message : '没有权限访问该页面' %></div>
+  <a class="btn btn-primary" href="/">返回首页</a>
+</div>
+</body>
+</html>
