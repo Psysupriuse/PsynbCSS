@@ -1,0 +1,23 @@
+{
+  "title": "Psy剪贴板",
+  "titlebarBg": "linear-gradient(135deg, rgb(109, 181, 232), rgb(91, 168, 224))",
+  "bodyBg": "rgb(242, 248, 252)",
+  "viewport": [
+    380,
+    562
+  ],
+  "cardCount": 5,
+  "firstCardPinned": true,
+  "pinnedBadgeCount": 1,
+  "timeLabels": [
+    "2 天前",
+    "2 分钟前",
+    "45 分钟前",
+    "2026-08-06 03:53",
+    "30 分钟前"
+  ],
+  "imageLoaded": true,
+  "emptyStateVisible": false,
+  "settingsViewHidden": true,
+  "rendererLogs": []
+}

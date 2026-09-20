@@ -1,0 +1,72 @@
+[
+  {
+    "name": "记录文字",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "连续复制相同内容去重",
+    "pass": true,
+    "detail": "条数=1"
+  },
+  {
+    "name": "密码类内容被过滤",
+    "pass": true,
+    "detail": "条数=1"
+  },
+  {
+    "name": "记录第二条文字(时间倒序)",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "记录图片并保存文件",
+    "pass": true,
+    "detail": "文件=D:\\历史粘贴\\.devdata\\images\\89fe3198-c67f-4b37-a9fa-ece2799597c7.png"
+  },
+  {
+    "name": "重启后数据仍在(持久化)",
+    "pass": true,
+    "detail": "条数=3"
+  },
+  {
+    "name": "设置持久化",
+    "pass": true,
+    "detail": "retentionDays=5"
+  },
+  {
+    "name": "容量上限(普通条目不超过 500 条)",
+    "pass": true,
+    "detail": "普通=500,置顶=5"
+  },
+  {
+    "name": "容量清理移除最旧的非置顶条目",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "置顶条目豁免容量清理",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "到期清理:过期未置顶条目被删除",
+    "pass": true,
+    "detail": "条数=2"
+  },
+  {
+    "name": "到期清理:置顶条目豁免",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "到期清理:图片文件同步删除",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "粘贴脚本包含 Ctrl+V 模拟",
+    "pass": true,
+    "detail": ""
+  }
+]

@@ -1,0 +1,46 @@
+{
+  "name": "psy-clipboard",
+  "productName": "Psy剪贴板",
+  "version": "1.0.0",
+  "description": "Psy剪贴板 — Windows 剪贴板历史工具:自动记录、搜索、置顶、一键回贴",
+  "main": "main.js",
+  "author": "Psy",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "node scripts/run.js",
+    "shot": "cross-env PSY_SCREENSHOT=1 node scripts/run.js",
+    "test": "cross-env PSY_SELFTEST=1 node scripts/run.js",
+    "uitest": "cross-env PSY_UITEST=1 node scripts/run.js",
+    "icon": "node scripts/make-icon.js",
+    "dist": "electron-builder --win"
+  },
+  "build": {
+    "appId": "com.psy.clipboard",
+    "productName": "Psy剪贴板",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "renderer/**/*",
+      "assets/**/*"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "Psy剪贴板"
+    }
+  },
+  "devDependencies": {
+    "cross-env": "^10.1.0",
+    "electron": "^44.4.3",
+    "electron-builder": "^26.15.3"
+  }
+}

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'" />
+  <title>Psy剪贴板</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- 标题栏(可拖动) -->
+    <header id="titlebar">
+      <div class="title-area">
+        <span class="logo"></span>
+        <span class="app-title">Psy剪贴板</span>
+      </div>
+      <div class="title-actions">
+        <button id="btn-settings" title="设置">⚙</button>
+        <button id="btn-hide" title="收起">✕</button>
+      </div>
+    </header>
+
+    <!-- 列表视图 -->
+    <section id="view-list">
+      <div class="search-bar">
+        <input id="search-input" type="text" placeholder="搜索历史内容…" spellcheck="false" />
+      </div>
+      <div id="list"></div>
+      <div id="empty-state">
+        <div class="empty-icon">📋</div>
+        <p>还没有复制记录</p>
+        <p class="empty-sub">复制点什么试试吧</p>
+      </div>
+    </section>
+
+    <!-- 设置视图(阶段 6 接入功能) -->
+    <section id="view-settings" hidden>
+      <div class="settings-head">
+        <button id="btn-back">← 返回</button>
+        <span class="settings-title">设置</span>
+      </div>
+      <div class="settings-body">
+        <div class="setting-group">
+          <label class="setting-label">保存期限</label>
+          <div class="radio-row">
+            <label><input type="radio" name="retention" value="1" /> 1 天</label>
+            <label><input type="radio" name="retention" value="3" /> 3 天</label>
+            <label><input type="radio" name="retention" value="5" /> 5 天</label>
+            <label class="custom-retention"><input type="radio" name="retention" value="custom" /> 自定义
+              <input id="retention-custom" type="number" min="1" max="3650" value="7" /> 天
+            </label>
+          </div>
+        </div>
+        <div class="setting-group">
+          <label class="setting-label">全局快捷键</label>
+          <button id="hotkey-btn" class="hotkey-btn"></button>
+          <span id="hotkey-hint" class="hint"></span>
+        </div>
+        <div class="setting-group">
+          <label class="toggle-row"><span>智能过滤密码</span><input id="toggle-filter" type="checkbox" /></label>
+          <label class="toggle-row"><span>点击卡片自动粘贴</span><input id="toggle-paste" type="checkbox" /></label>
+          <label class="toggle-row"><span>开机自启动</span><input id="toggle-autostart" type="checkbox" /></label>
+        </div>
+        <div class="setting-group">
+          <label class="setting-label">数据</label>
+          <button id="btn-clear" class="danger-btn">清空全部历史</button>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

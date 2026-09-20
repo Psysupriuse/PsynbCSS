@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ELECTRON_BUILDER_BINARIES_MIRROR=https://npmmirror.com/mirrors/electron-builder-binaries/ npm run dist)",
+      "Bash(\"dist/Psy剪贴板 Setup 1.0.0.exe\" //S)",
+      "Bash(echo \"安装退出码: $?\")",
+      "Bash(powershell -NoProfile -Command 'Get-CimInstance Win32_Process | Where-Object { $_.Name -eq \"Psy剪贴板.exe\" } | Select-Object ProcessId, ExecutablePath | Format-List; \"--- 开机自启注册表 ---\"; Get-ItemProperty \"HKCU:\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Run\" | Select-Object -Property *Psy* , *psy* -ErrorAction SilentlyContinue | Format-List; \\(Get-ItemProperty \"HKCU:\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Run\"\\).PSObject.Properties | Where-Object { $_.Name -like \"*psy*\" -or $_.Name -like \"*Psy*\" } | Format-List Name, Value')",
+      "Bash(powershell -NoProfile -Command 'Get-CimInstance Win32_Process | Where-Object { $_.ExecutablePath -like \"*psy-clipboard*\" } | Select-Object ProcessId, ExecutablePath | Format-List; \"--- 开机自启注册表项 ---\"; \\(Get-ItemProperty \"HKCU:\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Run\"\\).PSObject.Properties | Where-Object { $_.Value -like \"*psy-clipboard*\" } | ForEach-Object { $_.Name + \" = \" + $_.Value }')",
+      "Bash(powershell -NoProfile -Command 'Stop-Process -Name \"Psy*\" -Force -ErrorAction SilentlyContinue; $env:ELECTRON_RUN_AS_NODE = $null; $exe = Get-ChildItem \"$env:LOCALAPPDATA\\\\Programs\\\\psy-clipboard\" -Filter *.exe | Where-Object { $_.Name -notlike \"Uninstall*\" } | Select-Object -First 1 -ExpandProperty FullName; Start-Process -FilePath $exe; \"已启动: \" + $exe')",
+      "Bash(powershell -NoProfile -Command 'Get-CimInstance Win32_Process | Where-Object { $_.ExecutablePath -like \"*psy-clipboard*\" } | Measure-Object | ForEach-Object { \"安装版进程数: \" + $_.Count }')",
+      "Bash(powershell -NoProfile -Command '$env:ELECTRON_RUN_AS_NODE = $null; $exe = Get-ChildItem \"$env:LOCALAPPDATA\\\\Programs\\\\psy-clipboard\" -Filter \"*.exe\" | Where-Object { $_.Name -notlike \"Uninstall*\" } | Select-Object -First 1 -ExpandProperty FullName; if \\($exe\\) { Start-Process -FilePath $exe; \"已启动安装版: \" + $exe } else { \"错误:未找到应用 exe\" }')"
+    ]
+  }
+}

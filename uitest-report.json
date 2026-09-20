@@ -1,0 +1,162 @@
+[
+  {
+    "name": "初始渲染 5 张卡片且置顶卡在最上",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "默认快捷键已注册",
+    "pass": true,
+    "detail": "hotkey=Control+Alt+V"
+  },
+  {
+    "name": "搜索框真实按键输入生效",
+    "pass": true,
+    "detail": "输入框内容=\"url\""
+  },
+  {
+    "name": "输入后列表实时过滤",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "中文关键词过滤",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "清空搜索恢复 5 张卡片",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "置顶后徽标数量+1 且置顶卡在最上",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "取消置顶恢复",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "删除卡片后剩 4 张",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "点击文字卡:剪贴板内容正确",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "点击文字卡:窗口自动隐藏",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "点击文字卡:模拟粘贴被触发",
+    "pass": true,
+    "detail": "invoked=1"
+  },
+  {
+    "name": "回贴不产生新记录",
+    "pass": true,
+    "detail": "条数=4"
+  },
+  {
+    "name": "回贴内容不会被轮询重复记录",
+    "pass": true,
+    "detail": "条数=4"
+  },
+  {
+    "name": "点击图片卡:剪贴板为图片",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "点击图片卡:窗口自动隐藏",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "点击图片卡:模拟粘贴被触发",
+    "pass": true,
+    "detail": "invoked=2"
+  },
+  {
+    "name": "仅复制模式:剪贴板已更新",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "仅复制模式:不触发模拟粘贴",
+    "pass": true,
+    "detail": "invoked=2"
+  },
+  {
+    "name": "仅复制模式:窗口仍隐藏",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "设置视图已打开",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "选择\"5 天\"生效并持久化",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "自定义\"7 天\"生效",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "恢复\"3 天\"生效",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "录制新快捷键 Control+Alt+F9 生效",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "恢复默认快捷键",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "关闭智能过滤生效并持久化",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "重新开启智能过滤",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "清空全部历史",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "清空后图片目录为空",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "清空后显示空状态",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "Esc 收起面板",
+    "pass": true,
+    "detail": ""
+  }
+]
