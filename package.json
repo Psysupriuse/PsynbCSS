@@ -4,6 +4,9 @@
   "private": true,
   "description": "校园活动管理系统 V1.0 —— 软件工程迭代开发实验",
   "main": "app.js",
+  "engines": {
+    "node": ">=22.5.0"
+  },
   "scripts": {
     "start": "node app.js",
     "smoke": "node test/smoke.js"
