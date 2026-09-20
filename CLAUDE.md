@@ -15,6 +15,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | `docs/03-设计规范.md` | UI 配色（#1677ff 蓝色系）、组件规范、命名与代码规范 | 写页面/样式前 |
 | `docs/04-开发执行步骤.md` | 9 步提交计划、每步任务清单、运行方式、验证点 | 每步开始时 |
 | `docs/05-实现计划.md` | 实现计划：9 个任务的文件清单、具体代码、自测命令、提交命令 | 执行每个任务前 |
+| `docs/06-验证记录.md` | 验证记录：7 条验证点结果、冒烟输出、Bug 记录 | 写实验报告前 |
 | `devlog/YYYY-MM-DD.md` | 开发日志：每日完成事项 + 待办事项 | 每次会话开始 |
 
 ## 工作说明
