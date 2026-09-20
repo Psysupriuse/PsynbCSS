@@ -1,0 +1,35 @@
+<%- include('../partials/head', { title: '活动管理' }) %>
+<%- include('../partials/teacher-sidebar', { active: 'activities' }) %>
+    <div class="page-head">
+      <h2>活动管理</h2>
+      <a class="btn btn-primary" href="/teacher/activities/new">新增活动</a>
+    </div>
+    <% if (activities.length === 0) { %>
+      <div class="empty-state">暂无活动，点击右上角"新增活动"发布</div>
+    <% } else { %>
+      <table class="table">
+        <thead>
+          <tr><th>标题</th><th>时间</th><th>状态</th><th>操作</th></tr>
+        </thead>
+        <tbody>
+          <% activities.forEach(a => { %>
+            <tr>
+              <td><%= a.title %></td>
+              <td><%= a.time %></td>
+              <td><span class="badge badge-<%= a.status.color %>"><%= a.status.label %></span></td>
+              <td>
+                <a class="btn btn-secondary btn-sm" href="/teacher/activities/<%= a.id %>/edit">编辑</a>
+                <form class="inline-form js-confirm" action="/teacher/activities/<%= a.id %>/delete" method="POST">
+                  <button class="btn btn-danger btn-sm" type="submit">删除</button>
+                </form>
+                <a class="btn btn-secondary btn-sm" href="/teacher/activities/<%= a.id %>/roster">报名名单</a>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } %>
+  </main>
+</div>
+</body>
+</html>

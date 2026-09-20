@@ -1,0 +1,22 @@
+<%- include('../partials/head', { title: '后台首页' }) %>
+<%- include('../partials/teacher-sidebar', { active: 'dashboard' }) %>
+    <div class="page-head"><h2>后台首页</h2></div>
+    <div class="stat-cards">
+      <div class="card stat-card">
+        <div class="stat-number"><%= total %></div>
+        <div class="stat-label">总活动数</div>
+      </div>
+      <div class="card stat-card">
+        <div class="stat-number"><%= upcoming %></div>
+        <div class="stat-label">待开始</div>
+      </div>
+      <div class="card stat-card">
+        <div class="stat-number"><%= ended %></div>
+        <div class="stat-label">已结束</div>
+      </div>
+    </div>
+    <p class="meta">欢迎，<%= currentUser.username %> 老师</p>
+  </main>
+</div>
+</body>
+</html>
