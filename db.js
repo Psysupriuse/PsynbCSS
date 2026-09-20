@@ -47,6 +47,13 @@ function initDb() {
       teacher_id       INTEGER NOT NULL REFERENCES users(id),
       created_at       TEXT NOT NULL DEFAULT (datetime('now','localtime'))
     );
+    CREATE TABLE IF NOT EXISTS registrations (
+      id          INTEGER PRIMARY KEY AUTOINCREMENT,
+      activity_id INTEGER NOT NULL REFERENCES activities(id),
+      student_id  INTEGER NOT NULL REFERENCES users(id),
+      created_at  TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+      UNIQUE (activity_id, student_id)
+    );
   `);
   seedIfEmpty();
   return db;
