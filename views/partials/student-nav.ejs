@@ -1,0 +1,11 @@
+<nav class="top-nav">
+  <a class="brand" href="/student">校园活动管理系统</a>
+  <div class="nav-links">
+    <a href="/student" class="<%= active === 'index' ? 'active' : '' %>">首页</a>
+    <a href="/student/my" class="<%= active === 'my' ? 'active' : '' %>">我的报名</a>
+    <a href="/student/profile" class="<%= active === 'profile' ? 'active' : '' %>">个人中心</a>
+    <form action="/logout" method="POST">
+      <button type="submit" class="nav-logout">退出登录（<%= currentUser.username %>）</button>
+    </form>
+  </div>
+</nav>

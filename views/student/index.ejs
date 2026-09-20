@@ -1,0 +1,36 @@
+<%- include('../partials/head', { title: '活动列表' }) %>
+<%- include('../partials/student-nav', { active: 'index' }) %>
+<main class="container">
+  <%- include('../partials/flash') %>
+  <div class="page-head">
+    <h2>校园活动</h2>
+    <form action="/student" method="GET" class="search-form">
+      <input class="form-input" type="text" name="q" value="<%= keyword %>" placeholder="按活动标题或地点搜索">
+      <button class="btn btn-primary" type="submit">搜索</button>
+    </form>
+  </div>
+  <% if (activities.length === 0) { %>
+    <div class="empty-state">暂无活动</div>
+  <% } %>
+  <div class="card-grid">
+    <% activities.forEach(a => { %>
+      <div class="card activity-card">
+        <div class="card-head">
+          <h3 class="card-title"><%= a.title %></h3>
+          <span class="badge badge-<%= a.status.color %>"><%= a.status.label %></span>
+        </div>
+        <div class="card-body">
+          <p class="meta">时间：<%= a.time %></p>
+          <p class="meta">地点：<%= a.location %></p>
+          <p class="meta">主办方：<%= a.teacher_name %></p>
+          <p class="card-desc"><%= a.description %></p>
+        </div>
+        <div class="card-foot">
+          <a class="btn btn-primary" href="/student/activities/<%= a.id %>">查看详情</a>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+</main>
+</body>
+</html>

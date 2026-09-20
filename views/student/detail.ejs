@@ -1,0 +1,24 @@
+<%- include('../partials/head', { title: '活动详情' }) %>
+<%- include('../partials/student-nav', { active: 'index' }) %>
+<main class="container">
+  <%- include('../partials/flash') %>
+  <div class="card">
+    <div class="page-head">
+      <h2><%= activity.title %></h2>
+      <span class="badge badge-<%= activity.status.color %>"><%= activity.status.label %></span>
+    </div>
+    <p class="meta">活动时间：<%= activity.time %></p>
+    <p class="meta">活动地点：<%= activity.location %></p>
+    <p class="meta">主办教师：<%= activity.teacher_name %></p>
+    <p class="meta">最大报名人数：<%= activity.max_participants %> 人</p>
+    <p class="meta">已报名：<%= activity.registered_count %> 人</p>
+    <h3>活动介绍</h3>
+    <p><%= activity.description %></p>
+    <div class="form-actions">
+      <button class="btn btn-primary" disabled>立即报名（开发中）</button>
+      <a class="btn btn-secondary" href="/student">返回列表</a>
+    </div>
+  </div>
+</main>
+</body>
+</html>
