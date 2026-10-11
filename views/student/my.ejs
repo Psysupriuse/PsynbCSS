@@ -8,7 +8,7 @@
   <% } else { %>
     <table class="table">
       <thead>
-        <tr><th>活动名称</th><th>活动时间</th><th>报名时间</th><th>状态</th><th>操作</th></tr>
+        <tr><th>活动名称</th><th>活动时间</th><th>报名时间</th><th>报名状态</th><th>操作</th></tr>
       </thead>
       <tbody>
         <% rows.forEach(a => { %>
@@ -16,8 +16,19 @@
             <td><%= a.title %></td>
             <td><%= a.time %></td>
             <td><%= a.registered_at %></td>
-            <td><span class="badge badge-<%= a.status.color %>"><%= a.status.label %></span></td>
-            <td><a class="btn btn-secondary btn-sm" href="/student/activities/<%= a.id %>">查看详情</a></td>
+            <td><span class="badge badge-<%= a.reg_status_label.color %>"><%= a.reg_status_label.label %></span></td>
+            <td>
+              <a class="btn btn-secondary btn-sm" href="/student/activities/<%= a.id %>">查看详情</a>
+              <% if (a.reg_status === 'pending' || a.reg_status === 'approved') { %>
+                <form class="inline-form" action="/student/activities/<%= a.id %>/cancel" method="POST">
+                  <button class="btn btn-danger btn-sm" type="submit">取消报名</button>
+                </form>
+              <% } else if (a.reg_status === 'waiting') { %>
+                <form class="inline-form" action="/student/activities/<%= a.id %>/leave-waitlist" method="POST">
+                  <button class="btn btn-danger btn-sm" type="submit">退出候补</button>
+                </form>
+              <% } %>
+            </td>
           </tr>
         <% }) %>
       </tbody>

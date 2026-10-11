@@ -11,20 +11,48 @@
     <p class="meta">活动地点：<%= activity.location %></p>
     <p class="meta">主办教师：<%= activity.teacher_name %></p>
     <p class="meta">最大报名人数：<%= activity.max_participants %> 人</p>
-    <p class="meta">已报名：<%= activity.registered_count %> 人</p>
+    <p class="meta">已报名（含待确认）：<%= activity.registered_count %> 人</p>
+    <% if (activity.waiting_count) { %>
+      <p class="meta">候补：<%= activity.waiting_count %> 人</p>
+    <% } %>
+    <% if (activity.needs_review) { %>
+      <p class="meta">参加条件：<%= activity.requirement || '（未填写）' %></p>
+      <p class="meta">说明：报名后需老师确认，确认结果可在「我的报名」查看。</p>
+    <% } %>
     <h3>活动介绍</h3>
     <p><%= activity.description %></p>
+
+    <% const s = activity.myRecord ? activity.myRecord.status : null; %>
     <div class="form-actions">
-      <% if (activity.registered_by_me) { %>
-        <button class="btn btn-secondary" disabled>已报名，不可重复报名</button>
-      <% } else if (activity.status.key === 'ended') { %>
-        <button class="btn btn-secondary" disabled>活动已结束</button>
-      <% } else if (activity.status.key === 'full') { %>
-        <button class="btn btn-secondary" disabled>报名人数已满</button>
-      <% } else { %>
-        <form action="/student/activities/<%= activity.id %>/register" method="POST">
-          <button class="btn btn-primary" type="submit">立即报名</button>
+      <% if (s === 'pending') { %>
+        <span class="badge badge-warning">待确认</span>
+        <form action="/student/activities/<%= activity.id %>/cancel" method="POST">
+          <button class="btn btn-secondary" type="submit">取消报名</button>
         </form>
+      <% } else if (s === 'approved') { %>
+        <span class="badge badge-success">已通过</span>
+        <form action="/student/activities/<%= activity.id %>/cancel" method="POST">
+          <button class="btn btn-secondary" type="submit">取消报名</button>
+        </form>
+      <% } else if (s === 'waiting') { %>
+        <span class="badge badge-info">候补中</span>
+        <form action="/student/activities/<%= activity.id %>/leave-waitlist" method="POST">
+          <button class="btn btn-secondary" type="submit">退出候补</button>
+        </form>
+      <% } else { %>
+        <% if (s === 'rejected') { %><span class="badge badge-danger">未通过</span><% } %>
+        <% if (s === 'cancelled') { %><span class="badge badge-secondary">已取消</span><% } %>
+        <% if (activity.status.key === 'ended') { %>
+          <button class="btn btn-secondary" disabled>活动已结束</button>
+        <% } else if (activity.status.key === 'full') { %>
+          <form action="/student/activities/<%= activity.id %>/waitlist" method="POST">
+            <button class="btn btn-primary" type="submit">加入候补</button>
+          </form>
+        <% } else { %>
+          <form action="/student/activities/<%= activity.id %>/register" method="POST">
+            <button class="btn btn-primary" type="submit"><%= s === 'rejected' ? '重新报名' : '立即报名' %></button>
+          </form>
+        <% } %>
       <% } %>
       <a class="btn btn-secondary" href="/student">返回列表</a>
     </div>
