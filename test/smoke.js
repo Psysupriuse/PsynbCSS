@@ -80,6 +80,12 @@ async function main() {
   res = await student2.request('POST', `/student/activities/${activityId}/register`, {});
   text = await (await student2.request('GET', `/student/activities/${activityId}`)).text();
   check(text.includes('候补中'), '满员后报名自动进入候补');
+  res = await student2.request('POST', `/student/activities/${activityId}/leave-waitlist`, {});
+  text = await (await student2.request('GET', `/student/activities/${activityId}`)).text();
+  check(text.includes('加入候补') && !text.includes('候补中'), '候补学生可退出候补');
+  res = await student2.request('POST', `/student/activities/${activityId}/waitlist`, {});
+  text = await (await student2.request('GET', `/student/activities/${activityId}`)).text();
+  check(text.includes('候补中'), '退出后重新加入候补');
 
   // 4. 教师名单包含报名学生与候补学生（FR-12）
   text = await (await teacher.request('GET', `/teacher/activities/${activityId}/roster`)).text();
@@ -101,9 +107,19 @@ async function main() {
   res = await student2.request('POST', `/student/activities/${reviewId}/register`, {});
   text = await (await student2.request('GET', `/student/activities/${reviewId}`)).text();
   check(text.includes('待确认'), '需审核活动报名后显示待确认');
-  const roster = await (await teacher.request('GET', `/teacher/activities/${reviewId}/roster`)).text();
-  const regMatch = roster.match(new RegExp(`stu2_${suffix}[\\s\\S]*?name="registration_id" value="(\\d+)"`));
+  let roster = await (await teacher.request('GET', `/teacher/activities/${reviewId}/roster`)).text();
+  let regMatch = roster.match(new RegExp(`stu2_${suffix}[\\s\\S]*?name="registration_id" value="(\\d+)"`));
   check(regMatch !== null, '名单页出现待确认学生的审核表单');
+  res = await teacher.request('POST', `/teacher/activities/${reviewId}/review`, {
+    registration_id: regMatch[1], action: 'reject',
+  });
+  check(res.status === 302, '教师拒绝报名');
+  text = await (await student2.request('GET', `/student/activities/${reviewId}`)).text();
+  check(text.includes('未通过') && text.includes('重新报名'), '未通过后学生可重新报名');
+  res = await student2.request('POST', `/student/activities/${reviewId}/register`, {});
+  roster = await (await teacher.request('GET', `/teacher/activities/${reviewId}/roster`)).text();
+  regMatch = roster.match(new RegExp(`stu2_${suffix}[\\s\\S]*?name="registration_id" value="(\\d+)"`));
+  check(regMatch !== null, '重新报名后再次进入待确认');
   res = await teacher.request('POST', `/teacher/activities/${reviewId}/review`, {
     registration_id: regMatch[1], action: 'approve',
   });
