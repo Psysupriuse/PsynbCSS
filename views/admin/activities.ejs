@@ -1,0 +1,28 @@
+<%- include('../partials/head', { title: '活动监督' }) %>
+<%- include('../partials/admin-sidebar', { active: 'activities' }) %>
+    <div class="page-head"><h2>活动监督</h2></div>
+    <% if (activities.length === 0) { %>
+      <div class="empty-state">暂无活动</div>
+    <% } else { %>
+      <table class="table">
+        <thead>
+          <tr><th>标题</th><th>主办教师</th><th>时间</th><th>状态</th><th>报名/候补</th><th>操作</th></tr>
+        </thead>
+        <tbody>
+          <% activities.forEach(a => { %>
+            <tr>
+              <td><%= a.title %></td>
+              <td><%= a.teacher_name %></td>
+              <td><%= a.time %></td>
+              <td><span class="badge badge-<%= a.status.color %>"><%= a.status.label %></span></td>
+              <td><%= a.registered_count %> / <%= a.waiting_count %></td>
+              <td><a class="btn btn-secondary btn-sm" href="/admin/activities/<%= a.id %>">查看详情</a></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } %>
+  </main>
+</div>
+</body>
+</html>

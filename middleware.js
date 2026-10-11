@@ -20,5 +20,6 @@ module.exports = {
   requireLogin,
   requireStudent: requireRole('student'),
   requireTeacher: requireRole('teacher'),
+  requireAdmin: requireRole('admin'),
   setFlash,
 };

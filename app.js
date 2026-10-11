@@ -7,7 +7,8 @@ const { initDb } = require('./db');
 const authRouter = require('./auth');
 const studentRouter = require('./routes/student');
 const teacherRouter = require('./routes/teacher');
-const { requireLogin, requireStudent, requireTeacher } = require('./middleware');
+const adminRouter = require('./routes/admin');
+const { requireLogin, requireStudent, requireTeacher, requireAdmin } = require('./middleware');
 
 initDb();
 
@@ -38,12 +39,14 @@ app.use('/', authRouter);
 // 根路径按登录状态与角色跳转
 app.get('/', (req, res) => {
   if (!req.session.user) return res.redirect('/login');
-  return res.redirect(req.session.user.role === 'teacher' ? '/teacher' : '/student');
+  const home = { student: '/student', teacher: '/teacher', admin: '/admin' }[req.session.user.role];
+  return res.redirect(home || '/login');
 });
 
 // 学生/教师路由：登录 + 角色双重校验（NFR-01 权限隔离）
 app.use('/student', requireLogin, requireStudent, studentRouter);
 app.use('/teacher', requireLogin, requireTeacher, teacherRouter);
+app.use('/admin', requireLogin, requireAdmin, adminRouter);
 
 // 404 与统一错误处理
 app.use((req, res) => res.status(404).render('404'));

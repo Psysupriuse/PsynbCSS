@@ -1,0 +1,38 @@
+<%- include('../partials/head', { title: '用户管理' }) %>
+<%- include('../partials/admin-sidebar', { active: 'users' }) %>
+    <div class="page-head"><h2>用户管理</h2></div>
+    <% if (users.length === 0) { %>
+      <div class="empty-state">暂无用户</div>
+    <% } else { %>
+      <table class="table">
+        <thead>
+          <tr><th>ID</th><th>用户名</th><th>角色</th><th>状态</th><th>注册时间</th><th>操作</th></tr>
+        </thead>
+        <tbody>
+          <% users.forEach(u => { %>
+            <tr>
+              <td><%= u.id %></td>
+              <td><%= u.username %></td>
+              <td><%= { student: '学生', teacher: '教师', admin: '管理员' }[u.role] %></td>
+              <td>
+                <span class="badge <%= u.active ? 'badge-success' : 'badge-danger' %>"><%= u.active ? '可用' : '已停用' %></span>
+              </td>
+              <td><%= u.created_at %></td>
+              <td>
+                <% if (u.role === 'admin') { %>
+                  <span class="meta">不可操作</span>
+                <% } else { %>
+                  <form class="inline-form" action="/admin/users/<%= u.id %>/toggle" method="POST">
+                    <button class="btn <%= u.active ? 'btn-danger' : 'btn-secondary' %> btn-sm" type="submit"><%= u.active ? '停用' : '恢复' %></button>
+                  </form>
+                <% } %>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } %>
+  </main>
+</div>
+</body>
+</html>

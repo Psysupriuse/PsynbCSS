@@ -1,0 +1,28 @@
+<%- include('../partials/head', { title: '活动详情' }) %>
+<%- include('../partials/admin-sidebar', { active: 'activities' }) %>
+    <div class="page-head">
+      <h2>活动详情</h2>
+      <a class="btn btn-secondary" href="/admin/activities">返回活动监督</a>
+    </div>
+    <div class="card">
+      <div class="page-head">
+        <h3><%= activity.title %></h3>
+        <span class="badge badge-<%= activity.status.color %>"><%= activity.status.label %></span>
+      </div>
+      <p class="meta">主办教师：<%= activity.teacher_name %></p>
+      <p class="meta">活动时间：<%= activity.time %></p>
+      <p class="meta">活动地点：<%= activity.location %></p>
+      <p class="meta">最大报名人数：<%= activity.max_participants %></p>
+      <p class="meta">已报名（含待确认）：<%= activity.registered_count %> 人</p>
+      <p class="meta">候补：<%= activity.waiting_count %> 人</p>
+      <p class="meta">是否需要审核：<%= activity.needs_review ? '是' : '否' %></p>
+      <% if (activity.needs_review) { %>
+        <p class="meta">参加条件：<%= activity.requirement || '（未填写）' %></p>
+      <% } %>
+      <h3>活动介绍</h3>
+      <p><%= activity.description %></p>
+    </div>
+  </main>
+</div>
+</body>
+</html>

@@ -1,0 +1,22 @@
+<%- include('../partials/head', { title: '管理员后台' }) %>
+<%- include('../partials/admin-sidebar', { active: 'dashboard' }) %>
+    <div class="page-head"><h2>后台首页</h2></div>
+    <div class="stat-cards">
+      <div class="card stat-card">
+        <div class="stat-number"><%= totalUsers %></div>
+        <div class="stat-label">用户总数</div>
+      </div>
+      <div class="card stat-card">
+        <div class="stat-number"><%= totalActivities %></div>
+        <div class="stat-label">活动总数</div>
+      </div>
+      <div class="card stat-card">
+        <div class="stat-number"><%= disabledUsers %></div>
+        <div class="stat-label">已停用账号</div>
+      </div>
+    </div>
+    <p class="meta">欢迎，<%= currentUser.username %> 管理员</p>
+  </main>
+</div>
+</body>
+</html>

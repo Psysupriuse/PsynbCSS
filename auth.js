@@ -48,8 +48,13 @@ router.post('/login', (req, res) => {
     setFlash(req, 'error', '用户名或密码错误');
     return res.redirect('/login');
   }
+  if (!user.active) {
+    setFlash(req, 'error', '该账号已停用，请联系系统管理员');
+    return res.redirect('/login');
+  }
   req.session.user = { id: user.id, username: user.username, role: user.role };
-  res.redirect(user.role === 'teacher' ? '/teacher' : '/student');
+  const home = { student: '/student', teacher: '/teacher', admin: '/admin' }[user.role] || '/';
+  res.redirect(home);
 });
 
 // FR-04 退出登录

@@ -108,6 +108,8 @@ a { color: var(--primary); text-decoration: none; }
 .badge-success { background: #e6ffe9; color: var(--success); }
 .badge-warning { background: #fff3e8; color: var(--warning); }
 .badge-danger { background: #ffece8; color: var(--danger); }
+.badge-info { background: #e8f3ff; color: var(--primary); }
+.badge-secondary { background: #f0f2f5; color: var(--text-sub); }
 
 /* ---------- 登录/注册页：磨砂玻璃卡片 + Q版校景插画背景（docs/03 特例） ---------- */
 
