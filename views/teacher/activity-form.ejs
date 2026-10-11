@@ -22,6 +22,15 @@
         <label class="form-label" for="max_participants">最大报名人数 <span class="required">*</span></label>
         <input class="form-input" type="number" id="max_participants" name="max_participants" value="<%= activity.max_participants || '' %>" min="1" required>
       </div>
+      <div class="form-group">
+        <label class="form-label">
+          <input type="checkbox" name="needs_review" value="1" <%= activity.needs_review ? 'checked' : '' %>> 报名需要老师确认
+        </label>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="requirement">参加条件说明</label>
+        <textarea class="form-input" id="requirement" name="requirement" rows="2" placeholder="仅当勾选“报名需要老师确认”时有效"><%= activity.requirement || '' %></textarea>
+      </div>
       <div class="form-actions">
         <button class="btn btn-primary" type="submit">保存</button>
         <a class="btn btn-secondary" href="/teacher/activities">取消</a>

@@ -7,16 +7,19 @@
     <div class="card">
       <div class="page-head">
         <h3><%= activity.title %></h3>
-        <span class="meta">报名人数：<%= students.length %> / <%= activity.max_participants %></span>
+        <span class="meta">正式报名：<%= registeredCount %> / <%= activity.max_participants %>；候补：<%= waitingCount %></span>
       </div>
       <p class="meta">活动时间：<%= activity.time %></p>
       <p class="meta">活动地点：<%= activity.location %></p>
+      <% if (activity.needs_review) { %>
+        <p class="meta">参加条件：<%= activity.requirement || '（未填写）' %>（报名需老师确认）</p>
+      <% } %>
       <% if (students.length === 0) { %>
         <div class="empty-state">暂无学生报名</div>
       <% } else { %>
         <table class="table">
           <thead>
-            <tr><th>序号</th><th>学生用户名</th><th>报名时间</th></tr>
+            <tr><th>序号</th><th>学生用户名</th><th>报名时间</th><th>状态</th><th>操作</th></tr>
           </thead>
           <tbody>
             <% students.forEach((s, i) => { %>
@@ -24,6 +27,23 @@
                 <td><%= i + 1 %></td>
                 <td><%= s.username %></td>
                 <td><%= s.created_at %></td>
+                <td><span class="badge badge-<%= s.status_label.color %>"><%= s.status_label.label %></span></td>
+                <td>
+                  <% if (s.status === 'pending') { %>
+                    <form class="inline-form" action="/teacher/activities/<%= activity.id %>/review" method="POST">
+                      <input type="hidden" name="registration_id" value="<%= s.registration_id %>">
+                      <input type="hidden" name="action" value="approve">
+                      <button class="btn btn-primary btn-sm" type="submit">通过</button>
+                    </form>
+                    <form class="inline-form" action="/teacher/activities/<%= activity.id %>/review" method="POST">
+                      <input type="hidden" name="registration_id" value="<%= s.registration_id %>">
+                      <input type="hidden" name="action" value="reject">
+                      <button class="btn btn-danger btn-sm" type="submit">未通过</button>
+                    </form>
+                  <% } else { %>
+                    <span class="meta">—</span>
+                  <% } %>
+                </td>
               </tr>
             <% }) %>
           </tbody>

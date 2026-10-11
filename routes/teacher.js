@@ -1,13 +1,15 @@
-// 教师端：活动管理（发布/编辑/删除/名单/统计）、个人中心
+// 教师端：活动管理（发布/编辑/删除/名单审核/统计）、个人中心
 const express = require('express');
 const { getDb } = require('../db');
 const { setFlash } = require('../middleware');
 const { getActivityStatus, formatLocalTime } = require('../utils/activity-status');
+const { getRegistrationStatus } = require('../utils/registration-status');
 const auth = require('../auth');
 
 const router = express.Router();
 
 const TIME_RE = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/;
+const OCCUPIED_SQL = "status IN ('pending','approved')";
 
 // 校验活动表单，返回 { data, errors }；errors 为空数组表示通过
 function parseActivityForm(body) {
@@ -17,6 +19,8 @@ function parseActivityForm(body) {
     location: String(body.location || '').trim(),
     description: String(body.description || '').trim(),
     max_participants: Number(body.max_participants),
+    needs_review: body.needs_review ? 1 : 0,
+    requirement: String(body.requirement || '').trim(),
   };
   const errors = [];
   if (!data.title) errors.push('请填写活动标题');
@@ -41,7 +45,26 @@ function loadOwnActivity(req, res) {
   return activity;
 }
 
-// 后台首页统计：总活动数、待开始、已结束（仅本人活动；时间字符串格式固定，可直接比较）
+function occupiedCount(db, activityId) {
+  return db.prepare(`SELECT COUNT(*) AS c FROM registrations WHERE activity_id = ? AND ${OCCUPIED_SQL}`).get(activityId).c;
+}
+
+function waitingCount(db, activityId) {
+  return db.prepare("SELECT COUNT(*) AS c FROM registrations WHERE activity_id = ? AND status = 'waiting'").get(activityId).c;
+}
+
+// 报名被拒或取消后释放名额，把候补最早加入者递补为正式报名
+function promoteNext(db, activityId) {
+  const activity = db.prepare('SELECT * FROM activities WHERE id = ?').get(activityId);
+  if (!activity) return;
+  if (occupiedCount(db, activityId) >= activity.max_participants) return;
+  const next = db.prepare("SELECT * FROM registrations WHERE activity_id = ? AND status = 'waiting' ORDER BY created_at ASC, id ASC LIMIT 1").get(activityId);
+  if (!next) return;
+  db.prepare('UPDATE registrations SET status = ? WHERE id = ?')
+    .run(activity.needs_review ? 'pending' : 'approved', next.id);
+}
+
+// 后台首页统计：总活动数、待开始、已结束（仅本人活动）
 router.get('/', (req, res) => {
   const db = getDb();
   const now = formatLocalTime(new Date());
@@ -51,10 +74,12 @@ router.get('/', (req, res) => {
   res.render('teacher/dashboard', { total, upcoming, ended: total - upcoming });
 });
 
-// 活动管理列表（仅本人活动，含报名人数与状态）
+// 活动管理列表（仅本人活动，含正式报名人数与候补人数）
 router.get('/activities', (req, res) => {
   const rows = getDb().prepare(`
-    SELECT a.*, (SELECT COUNT(*) FROM registrations r WHERE r.activity_id = a.id) AS registered_count
+    SELECT a.*,
+      (SELECT COUNT(*) FROM registrations r WHERE r.activity_id = a.id AND ${OCCUPIED_SQL}) AS registered_count,
+      (SELECT COUNT(*) FROM registrations r WHERE r.activity_id = a.id AND r.status = 'waiting') AS waiting_count
     FROM activities a
     WHERE a.teacher_id = ?
     ORDER BY a.time DESC`).all(req.session.user.id);
@@ -67,7 +92,7 @@ router.get('/activities', (req, res) => {
 router.get('/activities/new', (req, res) => {
   res.render('teacher/activity-form', {
     mode: 'new',
-    activity: { title: '', time: '', location: '', description: '', max_participants: '' },
+    activity: { title: '', time: '', location: '', description: '', max_participants: '', needs_review: 0, requirement: '' },
   });
 });
 
@@ -78,8 +103,8 @@ router.post('/activities/new', (req, res) => {
     setFlash(req, 'error', errors.join('；'));
     return res.render('teacher/activity-form', { mode: 'new', activity: data });
   }
-  getDb().prepare('INSERT INTO activities (title, time, location, description, max_participants, teacher_id) VALUES (?, ?, ?, ?, ?, ?)')
-    .run(data.title, data.time, data.location, data.description, data.max_participants, req.session.user.id);
+  getDb().prepare('INSERT INTO activities (title, time, location, description, max_participants, needs_review, requirement, teacher_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
+    .run(data.title, data.time, data.location, data.description, data.max_participants, data.needs_review, data.requirement, req.session.user.id);
   setFlash(req, 'success', '活动创建成功');
   res.redirect('/teacher/activities');
 });
@@ -99,8 +124,8 @@ router.post('/activities/:id/edit', (req, res) => {
     setFlash(req, 'error', errors.join('；'));
     return res.render('teacher/activity-form', { mode: 'edit', activity: { ...data, id: activity.id } });
   }
-  getDb().prepare('UPDATE activities SET title = ?, time = ?, location = ?, description = ?, max_participants = ? WHERE id = ?')
-    .run(data.title, data.time, data.location, data.description, data.max_participants, activity.id);
+  getDb().prepare('UPDATE activities SET title = ?, time = ?, location = ?, description = ?, max_participants = ?, needs_review = ?, requirement = ? WHERE id = ?')
+    .run(data.title, data.time, data.location, data.description, data.max_participants, data.needs_review, data.requirement, activity.id);
   setFlash(req, 'success', '活动修改成功');
   res.redirect('/teacher/activities');
 });
@@ -115,17 +140,55 @@ router.post('/activities/:id/delete', (req, res) => {
   res.redirect('/teacher/activities');
 });
 
-// FR-12 查看报名名单（仅本人活动，仅展示用户名，V1.0 不导出）
+// FR-12 查看报名名单（仅本人活动）：展示状态，并对需审核活动的待确认报名执行通过/未通过
 router.get('/activities/:id/roster', (req, res) => {
   const activity = loadOwnActivity(req, res);
   if (!activity) return;
   const students = getDb().prepare(`
-    SELECT u.username, r.created_at
+    SELECT r.id AS registration_id, u.username, r.created_at, r.status
     FROM registrations r
     JOIN users u ON u.id = r.student_id
     WHERE r.activity_id = ?
-    ORDER BY r.created_at ASC`).all(activity.id);
-  res.render('teacher/roster', { activity, students });
+    ORDER BY r.created_at ASC, r.id ASC`).all(activity.id);
+  for (const s of students) {
+    s.status_label = getRegistrationStatus(s.status);
+  }
+  res.render('teacher/roster', {
+    activity,
+    students,
+    registeredCount: occupiedCount(getDb(), activity.id),
+    waitingCount: waitingCount(getDb(), activity.id),
+  });
+});
+
+// 审核报名：仅限本人活动、且状态为待确认的记录
+router.post('/activities/:id/review', (req, res) => {
+  const activity = loadOwnActivity(req, res);
+  if (!activity) return;
+  const db = getDb();
+  const regId = Number(req.body.registration_id);
+  const action = String(req.body.action || '');
+  const rosterUrl = `/teacher/activities/${activity.id}/roster`;
+  const reg = db.prepare('SELECT * FROM registrations WHERE id = ? AND activity_id = ?').get(regId, activity.id);
+  if (!reg) {
+    setFlash(req, 'error', '报名记录不存在');
+    return res.redirect(rosterUrl);
+  }
+  if (reg.status !== 'pending') {
+    setFlash(req, 'error', '该报名已处理，无需再次审核');
+    return res.redirect(rosterUrl);
+  }
+  if (action === 'approve') {
+    db.prepare("UPDATE registrations SET status = 'approved' WHERE id = ?").run(reg.id);
+    setFlash(req, 'success', `已通过「${activity.title}」的报名`);
+  } else if (action === 'reject') {
+    db.prepare("UPDATE registrations SET status = 'rejected' WHERE id = ?").run(reg.id);
+    promoteNext(db, activity.id);
+    setFlash(req, 'success', `已拒绝「${activity.title}」的报名`);
+  } else {
+    setFlash(req, 'error', '无效的审核操作');
+  }
+  res.redirect(rosterUrl);
 });
 
 // 个人中心

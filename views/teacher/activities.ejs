@@ -9,14 +9,15 @@
     <% } else { %>
       <table class="table">
         <thead>
-          <tr><th>标题</th><th>时间</th><th>状态</th><th>操作</th></tr>
+          <tr><th>标题</th><th>时间</th><th>状态</th><th>报名/候补</th><th>操作</th></tr>
         </thead>
         <tbody>
           <% activities.forEach(a => { %>
             <tr>
-              <td><%= a.title %></td>
+              <td><%= a.title %><% if (a.needs_review) { %> <span class="badge badge-info">需审核</span><% } %></td>
               <td><%= a.time %></td>
               <td><span class="badge badge-<%= a.status.color %>"><%= a.status.label %></span></td>
+              <td><%= a.registered_count %> / <%= a.max_participants %><% if (a.waiting_count) { %>（候补 <%= a.waiting_count %>）<% } %></td>
               <td>
                 <a class="btn btn-secondary btn-sm" href="/teacher/activities/<%= a.id %>/edit">编辑</a>
                 <form class="inline-form js-confirm" action="/teacher/activities/<%= a.id %>/delete" method="POST">
