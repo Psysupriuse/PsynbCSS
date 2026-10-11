@@ -1,8 +1,7 @@
-// 冒烟验证：对运行中的服务依次验证核心业务链路，任一步失败即报错退出
+// 冒烟验证（V2.0）：覆盖报名/审核/取消/候补/管理员，并回归 V1.0 核心链路
 // 运行前提：npm start 已启动；运行方式：npm run smoke
 const BASE = process.env.BASE_URL || 'http://localhost:3000';
 
-// 带 cookie 的简易 HTTP 客户端（Node 24 内置 fetch）
 function makeClient() {
   let cookie = '';
   return {
@@ -28,14 +27,21 @@ function check(ok, message) {
   console.log(`✔ ${message}`);
 }
 
+async function findActivityId(client, title) {
+  const text = await (await client.request('GET', '/student')).text();
+  const match = text.match(new RegExp(title + '[\\s\\S]*?href="/student/activities/(\\d+)"'));
+  if (!match) throw new Error('未找到活动：' + title);
+  return Number(match[1]);
+}
+
 async function main() {
-  const suffix = Date.now(); // 用户名加时间戳，支持重复运行
+  const suffix = Date.now();
   const teacher = makeClient();
   const student = makeClient();
   const student2 = makeClient();
   const futureTime = '2027-01-01 10:00';
 
-  // 1. 注册教师与学生（FR-01）
+  // 1. 注册与登录（FR-01/02）
   let res = await teacher.request('POST', '/register', {
     username: `tea_${suffix}`, password: 'pass123', confirm: 'pass123', role: 'teacher',
   });
@@ -44,64 +50,105 @@ async function main() {
     username: `stu_${suffix}`, password: 'pass123', confirm: 'pass123', role: 'student',
   });
   check(res.status === 302, '学生注册成功');
-
-  // 2. 登录按角色跳转（FR-02）
   res = await teacher.request('POST', '/login', { username: `tea_${suffix}`, password: 'pass123' });
   check(res.status === 302 && res.headers.get('location') === '/teacher', '教师登录跳转 /teacher');
   res = await student.request('POST', '/login', { username: `stu_${suffix}`, password: 'pass123' });
   check(res.status === 302 && res.headers.get('location') === '/student', '学生登录跳转 /student');
 
-  // 3. 教师创建活动（FR-09）
+  // 2. 教师创建普通活动（FR-09）
+  const normalTitle = `冒烟测试活动_${suffix}`;
   res = await teacher.request('POST', '/teacher/activities/new', {
-    title: `冒烟测试活动_${suffix}`, time: futureTime, location: '测试场地',
+    title: normalTitle, time: futureTime, location: '测试场地',
     description: '冒烟测试用活动', max_participants: '1',
   });
   check(res.status === 302, '教师创建活动成功');
+  const activityId = await findActivityId(student, normalTitle);
 
-  // 4. 学生端可见该活动（FR-05）
-  res = await student.request('GET', '/student');
-  const listText = await res.text();
-  check(listText.includes(`冒烟测试活动_${suffix}`), '学生活动列表可见新活动');
-
-  // 5. 学生报名成功；重复报名被拒（FR-07）
-  // 从列表页提取新建活动的详情链接（标题卡片内的链接）
-  const match = listText.match(new RegExp(`冒烟测试活动_${suffix}[\\s\\S]*?href="/student/activities/(\\d+)"`));
-  check(match !== null, '能从列表页提取活动详情链接');
-  const activityId = Number(match[1]);
+  // 3. 报名与候补：普通活动直接通过；满员后进入候补
   res = await student.request('POST', `/student/activities/${activityId}/register`, {});
   check(res.status === 302, '学生报名请求被接受');
-  res = await student.request('GET', `/student/activities/${activityId}`);
-  check((await res.text()).includes('已报名'), '详情页显示已报名');
+  let text = await (await student.request('GET', `/student/activities/${activityId}`)).text();
+  check(text.includes('已通过'), '普通活动报名后显示已通过');
   res = await student.request('POST', `/student/activities/${activityId}/register`, {});
-  res = await student.request('GET', `/student/activities/${activityId}`);
-  check((await res.text()).includes('不可重复报名'), '重复报名被拒绝');
+  text = await (await student.request('GET', `/student/activities/${activityId}`)).text();
+  check(text.includes('不可重复报名'), '重复报名被拒绝');
 
-  // 6. 满员拒绝（FR-07）：max_participants=1，第二个学生报名被拒
   res = await student2.request('POST', '/register', {
     username: `stu2_${suffix}`, password: 'pass123', confirm: 'pass123', role: 'student',
   });
   res = await student2.request('POST', '/login', { username: `stu2_${suffix}`, password: 'pass123' });
   res = await student2.request('POST', `/student/activities/${activityId}/register`, {});
-  res = await student2.request('GET', `/student/activities/${activityId}`);
-  check((await res.text()).includes('报名人数已满'), '满员报名被拒绝');
+  text = await (await student2.request('GET', `/student/activities/${activityId}`)).text();
+  check(text.includes('候补中'), '满员后报名自动进入候补');
 
-  // 7. 教师名单包含报名学生（FR-12）
-  res = await teacher.request('GET', `/teacher/activities/${activityId}/roster`);
-  check((await res.text()).includes(`stu_${suffix}`), '教师名单包含报名学生');
+  // 4. 教师名单包含报名学生与候补学生（FR-12）
+  text = await (await teacher.request('GET', `/teacher/activities/${activityId}/roster`)).text();
+  check(text.includes(`stu_${suffix}`) && text.includes(`stu2_${suffix}`), '教师名单包含报名与候补学生');
 
-  // 8. 权限隔离（NFR-01）：学生访问教师后台 → 403
+  // 5. 取消报名并自动递补候补
+  res = await student.request('POST', `/student/activities/${activityId}/cancel`, {});
+  text = await (await student2.request('GET', `/student/activities/${activityId}`)).text();
+  check(text.includes('已通过') && !text.includes('候补中'), '取消报名后候补学生自动递补');
+
+  // 6. 需审核活动：报名进入待确认，教师通过后状态变化
+  const reviewTitle = `冒烟审核活动_${suffix}`;
+  res = await teacher.request('POST', '/teacher/activities/new', {
+    title: reviewTitle, time: futureTime, location: '测试场地', description: '审核活动',
+    max_participants: '1', needs_review: '1', requirement: '仅限大二学生',
+  });
+  check(res.status === 302, '教师创建需审核活动成功');
+  const reviewId = await findActivityId(student2, reviewTitle);
+  res = await student2.request('POST', `/student/activities/${reviewId}/register`, {});
+  text = await (await student2.request('GET', `/student/activities/${reviewId}`)).text();
+  check(text.includes('待确认'), '需审核活动报名后显示待确认');
+  const roster = await (await teacher.request('GET', `/teacher/activities/${reviewId}/roster`)).text();
+  const regMatch = roster.match(new RegExp(`stu2_${suffix}[\\s\\S]*?name="registration_id" value="(\\d+)"`));
+  check(regMatch !== null, '名单页出现待确认学生的审核表单');
+  res = await teacher.request('POST', `/teacher/activities/${reviewId}/review`, {
+    registration_id: regMatch[1], action: 'approve',
+  });
+  check(res.status === 302, '教师通过报名');
+  text = await (await student2.request('GET', `/student/activities/${reviewId}`)).text();
+  check(text.includes('已通过'), '通过后学生详情显示已通过');
+
+  // 7. 权限隔离（NFR-01）：学生不能访问教师/管理员页面
   res = await student.request('GET', '/teacher');
   check(res.status === 403, '学生访问教师后台返回 403');
   res = await student.request('GET', `/teacher/activities/${activityId}/roster`);
   check(res.status === 403, '学生访问名单页返回 403');
+  res = await student.request('GET', '/admin');
+  check(res.status === 403, '学生访问管理员后台返回 403');
+  res = await teacher.request('GET', '/admin');
+  check(res.status === 403, '教师访问管理员后台返回 403');
+
+  // 8. 管理员：登录、查看页面、停用/恢复账号（停用后无法登录）
+  const admin = makeClient();
+  res = await admin.request('POST', '/login', { username: 'admin', password: 'admin123456' });
+  check(res.status === 302 && res.headers.get('location') === '/admin', '管理员登录跳转 /admin');
+  text = await (await admin.request('GET', '/admin/activities')).text();
+  check(text.includes('活动监督'), '管理员活动监督页可访问');
+  const stu3 = makeClient();
+  res = await stu3.request('POST', '/register', {
+    username: `stu3_${suffix}`, password: 'pass123', confirm: 'pass123', role: 'student',
+  });
+  check(res.status === 302, '注册待停用学生');
+  const usersText = await (await admin.request('GET', '/admin/users')).text();
+  const userMatch = usersText.match(new RegExp(`stu3_${suffix}[\\s\\S]*?action="/admin/users/(\\d+)/toggle"`));
+  check(userMatch !== null, '管理员用户列表包含新学生');
+  const userId = userMatch[1];
+  res = await admin.request('POST', `/admin/users/${userId}/toggle`, {});
+  check(res.status === 302, '管理员停用账号');
+  res = await stu3.request('POST', '/login', { username: `stu3_${suffix}`, password: 'pass123' });
+  res = await stu3.request('GET', '/student');
+  check(res.status === 302 && res.headers.get('location') === '/login', '停用账号无法登录');
 
   // 9. 教师删除活动后学生端不可见（FR-11）
   res = await teacher.request('POST', `/teacher/activities/${activityId}/delete`, {});
   check(res.status === 302, '教师删除活动成功');
-  res = await student.request('GET', '/student');
-  check(!(await res.text()).includes(`冒烟测试活动_${suffix}`), '删除后学生端不再显示该活动');
+  text = await (await student.request('GET', '/student')).text();
+  check(!text.includes(normalTitle), '删除后学生端不再显示该活动');
 
-  console.log('\n全部验证通过 ✔ 核心业务流程跑通');
+  console.log('\n全部验证通过 ✔ V2.0 核心业务流程跑通');
 }
 
 main().catch((err) => {
