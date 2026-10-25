@@ -18,11 +18,11 @@ function seedIfEmpty() {
     .run('teacher_demo', hashPassword('demo123456'), 'teacher');
   const teacher = db.prepare("SELECT id FROM users WHERE username = 'teacher_demo'").get();
   const sample = [
-    ['校园迎新晚会', '2026-10-15 19:00', '大学生活动中心', '欢迎新同学，节目表演与互动环节。', 200],
-    ['篮球友谊赛', '2026-09-25 16:00', '东区篮球场', '计算机学院 vs 机械学院，欢迎观赛。', 50],
-    ['图书馆读书分享会', '2026-09-10 14:00', '图书馆报告厅', '分享一本好书，交流阅读心得。', 80],
+    ['校园迎新晚会', '2026-10-15 19:00', '大学生活动中心', '欢迎新同学，节目表演与互动环节。', 200, '校园服务'],
+    ['篮球友谊赛', '2026-09-25 16:00', '东区篮球场', '计算机学院 vs 机械学院，欢迎观赛。', 50, '体育健康'],
+    ['图书馆读书分享会', '2026-09-10 14:00', '图书馆报告厅', '分享一本好书，交流阅读心得。', 80, '文化艺术'],
   ];
-  const insert = db.prepare('INSERT INTO activities (title, time, location, description, max_participants, teacher_id) VALUES (?, ?, ?, ?, ?, ?)');
+  const insert = db.prepare('INSERT INTO activities (title, time, location, description, max_participants, category, teacher_id) VALUES (?, ?, ?, ?, ?, ?, ?)');
   for (const row of sample) insert.run(...row, teacher.id);
 }
 
@@ -57,6 +57,15 @@ function initDb() {
       status      TEXT NOT NULL DEFAULT 'approved',
       created_at  TEXT NOT NULL DEFAULT (datetime('now','localtime'))
     );
+    CREATE TABLE IF NOT EXISTS messages (
+      id          INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id     INTEGER NOT NULL REFERENCES users(id),
+      activity_id INTEGER,
+      content     TEXT NOT NULL,
+      is_read     INTEGER NOT NULL DEFAULT 0,
+      created_at  TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+    );
+    CREATE INDEX IF NOT EXISTS idx_messages_user ON messages(user_id, is_read, id DESC);
   `);
   migrate();
   seedIfEmpty();
@@ -98,6 +107,7 @@ function migrate() {
 
   ensureColumn('activities', 'needs_review', 'INTEGER NOT NULL DEFAULT 0');
   ensureColumn('activities', 'requirement', "TEXT NOT NULL DEFAULT ''");
+  ensureColumn('activities', 'category', "TEXT NOT NULL DEFAULT '其他'");
   ensureColumn('registrations', 'status', "TEXT NOT NULL DEFAULT 'approved'");
 
   // 旧表用 UNIQUE(activity_id, student_id) 禁止同一学生多次报名，

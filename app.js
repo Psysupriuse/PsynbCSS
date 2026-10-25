@@ -8,7 +8,9 @@ const authRouter = require('./auth');
 const studentRouter = require('./routes/student');
 const teacherRouter = require('./routes/teacher');
 const adminRouter = require('./routes/admin');
+const messageRouter = require('./routes/message');
 const { requireLogin, requireStudent, requireTeacher, requireAdmin } = require('./middleware');
+const { unreadCount } = require('./utils/message');
 
 initDb();
 
@@ -31,6 +33,9 @@ app.use((req, res, next) => {
   res.locals.flash = req.session.flash || null;
   if (req.session.flash) delete req.session.flash;
   res.locals.currentUser = req.session.user || null;
+  res.locals.unreadCount = req.session.user && req.session.user.role === 'student'
+    ? unreadCount(req.session.user.id)
+    : 0;
   next();
 });
 
@@ -47,6 +52,7 @@ app.get('/', (req, res) => {
 app.use('/student', requireLogin, requireStudent, studentRouter);
 app.use('/teacher', requireLogin, requireTeacher, teacherRouter);
 app.use('/admin', requireLogin, requireAdmin, adminRouter);
+app.use('/messages', requireLogin, messageRouter);
 
 // 404 与统一错误处理
 app.use((req, res) => res.status(404).render('404'));
