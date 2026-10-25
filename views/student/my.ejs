@@ -1,4 +1,4 @@
-<%- include('../partials/head', { title: '我的报名' }) %>
+﻿<%- include('../partials/head', { title: '我的报名' }) %>
 <%- include('../partials/student-nav', { active: 'my' }) %>
 <main class="container">
   <%- include('../partials/flash') %>
@@ -13,18 +13,18 @@
       <tbody>
         <% rows.forEach(a => { %>
           <tr>
-            <td><%= a.title %></td>
-            <td><%= a.time %></td>
-            <td><%= a.registered_at %></td>
-            <td><span class="badge badge-<%= a.reg_status_label.color %>"><%= a.reg_status_label.label %></span></td>
-            <td>
+            <td data-label="活动名称"><%= a.title %></td>
+            <td data-label="活动时间"><%= a.time %></td>
+            <td data-label="报名时间"><%= a.registered_at %></td>
+            <td data-label="报名状态"><span class="badge badge-<%= a.reg_status_label.color %>"><%= a.reg_status_label.label %></span></td>
+            <td data-label="操作">
               <a class="btn btn-secondary btn-sm" href="/student/activities/<%= a.id %>">查看详情</a>
               <% if (a.reg_status === 'pending' || a.reg_status === 'approved') { %>
-                <form class="inline-form" action="/student/activities/<%= a.id %>/cancel" method="POST">
+                <form class="inline-form js-submitting" action="/student/activities/<%= a.id %>/cancel" method="POST">
                   <button class="btn btn-danger btn-sm" type="submit">取消报名</button>
                 </form>
               <% } else if (a.reg_status === 'waiting') { %>
-                <form class="inline-form" action="/student/activities/<%= a.id %>/leave-waitlist" method="POST">
+                <form class="inline-form js-submitting" action="/student/activities/<%= a.id %>/leave-waitlist" method="POST">
                   <button class="btn btn-danger btn-sm" type="submit">退出候补</button>
                 </form>
               <% } %>
@@ -35,5 +35,6 @@
     </table>
   <% } %>
 </main>
+<script src="/js/main.js"></script>
 </body>
 </html>

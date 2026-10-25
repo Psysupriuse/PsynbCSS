@@ -368,3 +368,132 @@ a { color: var(--primary); text-decoration: none; }
 .error-code { font-size: 64px; font-weight: bold; color: var(--primary); }
 
 .error-text { font-size: 16px; color: var(--text-sub); margin: 16px 0 24px; }
+
+/* ---------- V3.0 筛选栏 ---------- */
+
+.filter-bar { padding: 16px 20px; }
+
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  align-items: flex-end;
+}
+
+.filter-item { display: flex; flex-direction: column; gap: 4px; }
+
+.filter-item .form-label { margin-bottom: 0; font-size: 13px; color: var(--text-sub); }
+
+.filter-keyword { flex: 1; min-width: 200px; }
+
+.filter-item .form-input { width: 160px; }
+.filter-keyword .form-input { width: 100%; }
+
+.filter-actions { display: flex; gap: 8px; margin-left: auto; }
+
+.filter-summary { margin: 0 0 12px; }
+
+.meta-strong { color: var(--text-main); font-weight: 500; }
+
+/* ---------- V3.0 消息中心 ---------- */
+
+.message-list { display: flex; flex-direction: column; gap: 12px; }
+
+.message-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 0;
+  border-left: 3px solid #eef1f5;
+}
+
+.message-unread { border-left-color: var(--primary); background: #fbfdff; }
+
+.message-body { min-width: 0; }
+
+.message-text { margin: 0; font-size: 14px; }
+
+.message-time { margin: 6px 0 0; font-size: 12px; }
+
+.nav-badge {
+  display: inline-block;
+  min-width: 18px;
+  margin-left: 4px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: #fff;
+  color: var(--primary);
+  font-size: 12px;
+  line-height: 18px;
+  text-align: center;
+  font-weight: bold;
+}
+
+/* ---------- V3.0 移动端适配（数据中 mobile 访问占 70.9%） ---------- */
+
+@media (max-width: 768px) {
+  .container { padding: 16px; }
+
+  .top-nav {
+    height: auto;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 10px 16px;
+    gap: 6px;
+  }
+
+  .nav-links { flex-wrap: wrap; gap: 4px; width: 100%; }
+
+  .nav-links a, .nav-logout { padding: 6px 10px; font-size: 13px; }
+
+  .page-head { flex-direction: column; align-items: flex-start; gap: 12px; }
+
+  .search-form, .filter-actions { width: 100%; }
+
+  .search-form .form-input { width: 100%; }
+
+  .filter-item, .filter-item .form-input, .filter-keyword { width: 100%; }
+
+  .filter-actions { margin-left: 0; }
+
+  .filter-actions .btn { flex: 1; text-align: center; }
+
+  .card-grid { grid-template-columns: 1fr; }
+
+  .stat-cards { grid-template-columns: 1fr; }
+
+  .side-layout { flex-direction: column; }
+
+  .side-menu { width: 100%; box-shadow: none; }
+
+  .side-main { padding: 16px; }
+
+  .message-item { flex-direction: column; align-items: flex-start; }
+
+  .form-actions { flex-wrap: wrap; }
+}
+
+/* 窄屏下表格改为卡片式堆叠，避免横向滚动 */
+@media (max-width: 768px) {
+  .table, .table tbody, .table tr, .table td { display: block; width: 100%; }
+
+  .table thead { display: none; }
+
+  .table tr {
+    border: 1px solid #eef1f5;
+    border-radius: var(--radius);
+    margin-bottom: 12px;
+    padding: 4px 0;
+  }
+
+  .table td { border-bottom: none; padding: 8px 16px; }
+
+  .table td::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 12px;
+    color: var(--text-sub);
+    margin-bottom: 2px;
+  }
+}

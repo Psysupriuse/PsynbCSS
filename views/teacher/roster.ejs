@@ -1,4 +1,4 @@
-<%- include('../partials/head', { title: '报名名单' }) %>
+﻿<%- include('../partials/head', { title: '报名名单' }) %>
 <%- include('../partials/teacher-sidebar', { active: 'activities' }) %>
     <div class="page-head">
       <h2>报名名单</h2>
@@ -24,11 +24,11 @@
           <tbody>
             <% students.forEach((s, i) => { %>
               <tr>
-                <td><%= i + 1 %></td>
-                <td><%= s.username %></td>
-                <td><%= s.created_at %></td>
-                <td><span class="badge badge-<%= s.status_label.color %>"><%= s.status_label.label %></span></td>
-                <td>
+                <td data-label="序号"><%= i + 1 %></td>
+                <td data-label="学生用户名"><%= s.username %></td>
+                <td data-label="报名时间"><%= s.created_at %></td>
+                <td data-label="状态"><span class="badge badge-<%= s.status_label.color %>"><%= s.status_label.label %></span></td>
+                <td data-label="操作">
                   <% if (s.status === 'pending') { %>
                     <form class="inline-form" action="/teacher/activities/<%= activity.id %>/review" method="POST">
                       <input type="hidden" name="registration_id" value="<%= s.registration_id %>">
