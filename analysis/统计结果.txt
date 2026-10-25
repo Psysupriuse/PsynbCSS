@@ -1,0 +1,29 @@
+== 1. 报名请求结果（registration_log.csv，apply=2748，cancel=130）
+   accepted           1689 (61.5%)
+   waitlisted          876 (31.9%)
+   duplicate           126 (4.6%)
+   capacity_conflict    41 (1.5%)
+   server_error         16 (0.6%)
+   apply 耗时 p50=256ms p95=1573ms max=2650ms
+   accepted           p50=215ms p95=1197ms
+   waitlisted         p50=528ms p95=1745ms
+   capacity_conflict  p50=1308ms p95=2295ms
+== 2. 重复提交
+   多次 apply 的组合 126 组，多出的无效请求 126 次（4.6%），客户端自报重试 126 次
+== 3. 候补与递补（waitlist_log.csv）
+   进入候补 876，发生递补 130（14.8%）
+   递补成功但无 status_view 记录：26 / 130（20.0%）
+   状态变化原因：{'CAPACITY_FULL': 876, 'SLOT_RELEASED': 130}
+== 4. 容量与满员（activity.csv，24 个活动）
+   达到容量上限的活动 17/24（70.8%）；容量 min=31 中位=76 max=110
+== 5. 用户行为（user_behavior.csv，11027 条，1416 个会话）
+   单会话打开详情页 p50=3 p90=8 max=10
+   到达报名页的会话 251 个，此前平均打开详情 3.0 次
+   设备：mobile=7818(70.9%) desktop=2848 tablet=339 空值=22；重复 event_id=28
+== 6. 匿名反馈（feedback.csv，112 条，26 种表述）
+   候补/状态不可见               28 条
+   提交结果不确定/重复点击           19 条
+   查找筛选困难                 13 条
+   标题信息不足                 15 条
+== 7. 系统日志（system_log.csv，792 条）
+   级别 {'WARN': 276, 'INFO': 459, 'ERROR': 57}；ERROR 事件码 {'E409': 41, 'E500': 16}；WARN 事件码 {'ASSET_RETRY': 26, 'SLOW_REQUEST': 250}
