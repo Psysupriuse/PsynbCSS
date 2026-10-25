@@ -1,5 +1,7 @@
-// 冒烟验证（V2.0）：覆盖报名/审核/取消/候补/管理员，并回归 V1.0 核心链路
+// 冒烟验证（V3.0）：回归 V1.0/V2.0 核心链路，并覆盖站内消息、筛选排序、提交防重、移动端适配
 // 运行前提：npm start 已启动；运行方式：npm run smoke
+const fs = require('node:fs');
+const path = require('node:path');
 const BASE = process.env.BASE_URL || 'http://localhost:3000';
 
 function makeClient() {
@@ -164,9 +166,76 @@ async function main() {
   text = await (await student.request('GET', '/student')).text();
   check(!text.includes(normalTitle), '删除后学生端不再显示该活动');
 
-  console.log('\n全部验证通过 ✔ V2.0 核心业务流程跑通');
-}
+  // ---- V3.0 新增断言 ----
 
+  // 10. 活动列表筛选与排序（FR-V3-02）
+  const filterTitle = `冒烟筛选活动_${suffix}`;
+  res = await teacher.request('POST', '/teacher/activities/new', {
+    title: filterTitle, time: futureTime, location: '筛选场地', description: '筛选测试',
+    max_participants: '1', category: '体育健康',
+  });
+  check(res.status === 302, '教师创建带类型的活动成功');
+  const filterId = await findActivityId(student, filterTitle);
+
+  text = await (await student.request('GET', `/student?category=${encodeURIComponent('体育健康')}`)).text();
+  check(text.includes(filterTitle), '按活动类型筛选可命中目标活动');
+  text = await (await student.request('GET', `/student?category=${encodeURIComponent('科技创新')}`)).text();
+  check(!text.includes(filterTitle), '按其他类型筛选不命中目标活动');
+  text = await (await student.request('GET', `/student?sort=slots`)).text();
+  check(text.includes(filterTitle), '按剩余名额排序列表正常返回');
+  text = await (await student.request('GET', '/student?time=weekend')).text();
+  check(text.includes('校园活动'), '按周末筛选页面正常渲染');
+  text = await (await student.request('GET', '/student')).text();
+  check(text.includes('重置') && text.includes('全部类型'), '筛选表单包含类型选项与重置入口');
+
+  // 11. 站内消息（FR-V3-01）：报名/候补/递补/审核均产生消息，未读数与已读生效
+  text = await (await student.request('GET', '/messages')).text();
+  check(text.includes('报名成功'), '报名成功后消息页有对应消息');
+  let navText = await (await student.request('GET', '/student')).text();
+  check(/消息\s*<span class="nav-badge">\d+<\/span>/.test(navText), '导航栏显示未读消息数徽标');
+  res = await student.request('POST', '/messages/read-all', {});
+  check(res.status === 302, '全部标为已读');
+  navText = await (await student.request('GET', '/student')).text();
+  check(!navText.includes('nav-badge'), '已读后导航栏不再显示未读徽标');
+
+  // 候补递补产生的消息（先占满名额，再让学生2候补，学生取消后递补）
+  res = await student.request('POST', `/student/activities/${filterId}/register`, {});
+  text = await (await student.request('GET', `/student/activities/${filterId}`)).text();
+  check(text.includes('已通过'), '筛选活动报名后显示已通过');
+  res = await student2.request('POST', `/student/activities/${filterId}/register`, {});
+  text = await (await student2.request('GET', `/student/activities/${filterId}`)).text();
+  check(text.includes('候补中'), '名额满后第二个学生进入候补');
+  res = await student.request('POST', `/student/activities/${filterId}/cancel`, {});
+  text = await (await student2.request('GET', '/messages')).text();
+  check(text.includes('候补转正'), '候补递补后学生收到站内消息');
+
+  // 12. 报名提交防重复点击（FR-V3-03）：详情页表单带 js-submitting，main.js 负责禁用按钮
+  text = await (await student.request('GET', `/student/activities/${filterId}`)).text();
+  check(text.includes('js-submitting') && text.includes('加入候补'), '详情页报名类表单带防重复提交标记');
+  const mainJs = fs.readFileSync(path.join(__dirname, '..', 'public', 'js', 'main.js'), 'utf8');
+  check(mainJs.includes('js-submitting') && mainJs.includes('disabled'), '前端脚本在提交期间禁用按钮');
+
+  // 13. 已结束活动报名被明确拒绝（FR-V3-03：失败必须说明原因）
+  const pastTitle = `冒烟已结束活动_${suffix}`;
+  res = await teacher.request('POST', '/teacher/activities/new', {
+    title: pastTitle, time: '2020-01-01 10:00', location: '测试场地',
+    description: '已结束', max_participants: '5', category: '校园服务',
+  });
+  check(res.status === 302, '教师创建已结束活动成功');
+  const pastId = await findActivityId(student, pastTitle);
+  res = await student.request('POST', `/student/activities/${pastId}/register`, {});
+  check(res.status === 302 && res.headers.get('location') === `/student/activities/${pastId}`, '已结束活动报名请求被拒绝');
+  text = await (await student.request('GET', `/student/activities/${pastId}`)).text();
+  check(text.includes('已结束，无法报名'), '已结束活动提示明确说明原因');
+
+  // 14. 移动端适配（FR-V3-04）：样式含窄屏断点，表格改为卡片堆叠
+  const css = fs.readFileSync(path.join(__dirname, '..', 'public', 'css', 'style.css'), 'utf8');
+  check(css.includes('max-width: 768px'), '样式表包含 768px 移动端断点');
+  const myText = await (await student.request('GET', '/student/my')).text();
+  check(myText.includes('data-label'), '我的报名表格带移动端堆叠所需 data-label');
+
+  console.log('\n全部验证通过 ✔ V3.0 核心业务流程跑通');
+}
 main().catch((err) => {
   console.error(`✘ 异常: ${err.message}`);
   process.exit(1);
