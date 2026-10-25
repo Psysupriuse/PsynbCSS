@@ -1,7 +1,10 @@
-<nav class="top-nav">
+﻿<nav class="top-nav">
   <a class="brand" href="/student">校园活动管理系统</a>
   <div class="nav-links">
     <a href="/student" class="<%= active === 'index' ? 'active' : '' %>">首页</a>
+    <a href="/messages" class="<%= active === 'messages' ? 'active' : '' %>">
+      消息<% if (typeof unreadCount !== 'undefined' && unreadCount > 0) { %><span class="nav-badge"><%= unreadCount %></span><% } %>
+    </a>
     <a href="/student/my" class="<%= active === 'my' ? 'active' : '' %>">我的报名</a>
     <a href="/student/profile" class="<%= active === 'profile' ? 'active' : '' %>">个人中心</a>
     <form action="/logout" method="POST">

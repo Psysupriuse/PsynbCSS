@@ -4,10 +4,13 @@ const { getDb } = require('../db');
 const { setFlash } = require('../middleware');
 const { getActivityStatus, formatLocalTime } = require('../utils/activity-status');
 const { getRegistrationStatus } = require('../utils/registration-status');
+const { createMessage } = require('../utils/message');
 const auth = require('../auth');
 
 const router = express.Router();
 
+// V3.0 活动类型选项（与学生端筛选共用同一份列表）
+const CATEGORIES = ['校园服务', '文化艺术', '体育健康', '公益实践', '科普实践', '科技创新', '职业发展', '技能提升', '其他'];
 const TIME_RE = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/;
 const OCCUPIED_SQL = "status IN ('pending','approved')";
 
@@ -21,6 +24,7 @@ function parseActivityForm(body) {
     max_participants: Number(body.max_participants),
     needs_review: body.needs_review ? 1 : 0,
     requirement: String(body.requirement || '').trim(),
+    category: String(body.category || '').trim() || '其他',
   };
   const errors = [];
   if (!data.title) errors.push('请填写活动标题');
@@ -28,6 +32,7 @@ function parseActivityForm(body) {
   if (!data.location) errors.push('请填写活动地点');
   if (!data.description) errors.push('请填写活动简介');
   if (!Number.isInteger(data.max_participants) || data.max_participants < 1) errors.push('最大报名人数应为正整数');
+  if (!CATEGORIES.includes(data.category)) errors.push('请选择有效的活动类型');
   return { data, errors };
 }
 
@@ -62,6 +67,7 @@ function promoteNext(db, activityId) {
   if (!next) return;
   db.prepare('UPDATE registrations SET status = ? WHERE id = ?')
     .run(activity.needs_review ? 'pending' : 'approved', next.id);
+  createMessage(next.student_id, `您报名的「${activity.title}」已候补转正，报名成功`, activity.id);
 }
 
 // 后台首页统计：总活动数、待开始、已结束（仅本人活动）
@@ -92,7 +98,8 @@ router.get('/activities', (req, res) => {
 router.get('/activities/new', (req, res) => {
   res.render('teacher/activity-form', {
     mode: 'new',
-    activity: { title: '', time: '', location: '', description: '', max_participants: '', needs_review: 0, requirement: '' },
+    activity: { title: '', time: '', location: '', description: '', max_participants: '', needs_review: 0, requirement: '', category: '' },
+    categories: CATEGORIES,
   });
 });
 
@@ -103,8 +110,8 @@ router.post('/activities/new', (req, res) => {
     setFlash(req, 'error', errors.join('；'));
     return res.render('teacher/activity-form', { mode: 'new', activity: data });
   }
-  getDb().prepare('INSERT INTO activities (title, time, location, description, max_participants, needs_review, requirement, teacher_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
-    .run(data.title, data.time, data.location, data.description, data.max_participants, data.needs_review, data.requirement, req.session.user.id);
+  getDb().prepare('INSERT INTO activities (title, time, location, description, max_participants, needs_review, requirement, category, teacher_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)')
+    .run(data.title, data.time, data.location, data.description, data.max_participants, data.needs_review, data.requirement, data.category, req.session.user.id);
   setFlash(req, 'success', '活动创建成功');
   res.redirect('/teacher/activities');
 });
@@ -113,7 +120,7 @@ router.post('/activities/new', (req, res) => {
 router.get('/activities/:id/edit', (req, res) => {
   const activity = loadOwnActivity(req, res);
   if (!activity) return;
-  res.render('teacher/activity-form', { mode: 'edit', activity });
+  res.render('teacher/activity-form', { mode: 'edit', activity, categories: CATEGORIES });
 });
 
 router.post('/activities/:id/edit', (req, res) => {
@@ -122,10 +129,10 @@ router.post('/activities/:id/edit', (req, res) => {
   const { data, errors } = parseActivityForm(req.body);
   if (errors.length) {
     setFlash(req, 'error', errors.join('；'));
-    return res.render('teacher/activity-form', { mode: 'edit', activity: { ...data, id: activity.id } });
+    return res.render('teacher/activity-form', { mode: 'edit', activity: { ...data, id: activity.id }, categories: CATEGORIES });
   }
-  getDb().prepare('UPDATE activities SET title = ?, time = ?, location = ?, description = ?, max_participants = ?, needs_review = ?, requirement = ? WHERE id = ?')
-    .run(data.title, data.time, data.location, data.description, data.max_participants, data.needs_review, data.requirement, activity.id);
+  getDb().prepare('UPDATE activities SET title = ?, time = ?, location = ?, description = ?, max_participants = ?, needs_review = ?, requirement = ?, category = ? WHERE id = ?')
+    .run(data.title, data.time, data.location, data.description, data.max_participants, data.needs_review, data.requirement, data.category, activity.id);
   setFlash(req, 'success', '活动修改成功');
   res.redirect('/teacher/activities');
 });
@@ -180,9 +187,11 @@ router.post('/activities/:id/review', (req, res) => {
   }
   if (action === 'approve') {
     db.prepare("UPDATE registrations SET status = 'approved' WHERE id = ?").run(reg.id);
+    createMessage(reg.student_id, `您报名的「${activity.title}」已通过审核`, activity.id);
     setFlash(req, 'success', `已通过「${activity.title}」的报名`);
   } else if (action === 'reject') {
     db.prepare("UPDATE registrations SET status = 'rejected' WHERE id = ?").run(reg.id);
+    createMessage(reg.student_id, `您报名的「${activity.title}」未通过审核`, activity.id);
     promoteNext(db, activity.id);
     setFlash(req, 'success', `已拒绝「${activity.title}」的报名`);
   } else {

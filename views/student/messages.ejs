@@ -1,0 +1,32 @@
+﻿<%- include('../partials/head', { title: '消息' }) %>
+<%- include('../partials/student-nav', { active: 'messages' }) %>
+<main class="container">
+  <%- include('../partials/flash') %>
+  <div class="page-head">
+    <h2>消息通知</h2>
+    <% if (messages.some(m => !m.is_read)) { %>
+      <form action="/messages/read-all" method="POST">
+        <button class="btn btn-secondary" type="submit">全部标为已读</button>
+      </form>
+    <% } %>
+  </div>
+  <% if (messages.length === 0) { %>
+    <div class="empty-state">暂无消息，报名结果变化时会在这里通知你</div>
+  <% } else { %>
+    <div class="message-list">
+      <% messages.forEach(m => { %>
+        <div class="card message-item<%= m.is_read ? '' : ' message-unread' %>">
+          <div class="message-body">
+            <p class="message-text"><%= m.content %></p>
+            <p class="meta message-time"><%= m.created_at %></p>
+          </div>
+          <% if (m.activity_id) { %>
+            <a class="btn btn-secondary btn-sm" href="/student/activities/<%= m.activity_id %>">查看活动</a>
+          <% } %>
+        </div>
+      <% }) %>
+    </div>
+  <% } %>
+</main>
+</body>
+</html>
