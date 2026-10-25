@@ -1,16 +1,50 @@
-<%- include('../partials/head', { title: '活动列表' }) %>
+﻿<%- include('../partials/head', { title: '活动列表' }) %>
 <%- include('../partials/student-nav', { active: 'index' }) %>
 <main class="container">
   <%- include('../partials/flash') %>
   <div class="page-head">
     <h2>校园活动</h2>
-    <form action="/student" method="GET" class="search-form">
-      <input class="form-input" type="text" name="q" value="<%= keyword %>" placeholder="按活动标题或地点搜索">
-      <button class="btn btn-primary" type="submit">搜索</button>
-    </form>
   </div>
+  <form action="/student" method="GET" class="card filter-bar">
+    <div class="filter-row">
+      <div class="filter-item filter-keyword">
+        <label class="form-label" for="q">关键字</label>
+        <input class="form-input" type="text" id="q" name="q" value="<%= filters.q %>" placeholder="标题或地点">
+      </div>
+      <div class="filter-item">
+        <label class="form-label" for="category">活动类型</label>
+        <select class="form-input" id="category" name="category">
+          <option value="">全部类型</option>
+          <% categories.forEach(c => { %>
+            <option value="<%= c %>" <%= filters.category === c ? 'selected' : '' %>><%= c %></option>
+          <% }) %>
+               </select>
+      </div>
+      <div class="filter-item">
+        <label class="form-label" for="time">开始时间</label>
+        <select class="form-input" id="time" name="time">
+          <option value="">全部时间</option>
+          <option value="week" <%= filters.time === 'week' ? 'selected' : '' %>>本周</option>
+          <option value="weekend" <%= filters.time === 'weekend' ? 'selected' : '' %>>周末</option>
+          <option value="month" <%= filters.time === 'month' ? 'selected' : '' %>>本月</option>
+        </select>
+      </div>
+      <div class="filter-item">
+        <label class="form-label" for="sort">排序</label>
+        <select class="form-input" id="sort" name="sort">
+          <option value="" <%= filters.sort === '' ? 'selected' : '' %>>按开始时间</option>
+          <option value="slots" <%= filters.sort === 'slots' ? 'selected' : '' %>>剩余名额多到少</option>
+        </select>
+      </div>
+      <div class="filter-actions">
+        <button class="btn btn-primary" type="submit">筛选</button>
+        <a class="btn btn-secondary" href="/student">重置</a>
+      </div>
+    </div>
+  </form>
+  <p class="meta filter-summary">共 <%= activities.length %> 个活动</p>
   <% if (activities.length === 0) { %>
-    <div class="empty-state">暂无活动</div>
+    <div class="empty-state">没有符合条件的活动，试试调整筛选条件</div>
   <% } %>
   <div class="card-grid">
     <% activities.forEach(a => { %>
@@ -20,9 +54,13 @@
           <span class="badge badge-<%= a.status.color %>"><%= a.status.label %></span>
         </div>
         <div class="card-body">
-          <p class="meta">时间：<%= a.time %></p>
+          <p class="meta">
+            <span class="badge badge-info"><%= a.category %></span>
+            <span class="meta-strong">时间：<%= a.time %></span>
+          </p>
           <p class="meta">地点：<%= a.location %></p>
           <p class="meta">主办方：<%= a.teacher_name %></p>
+          <p class="meta-strong">名额：<%= a.registered_count %> / <%= a.max_participants %></p>
           <p class="card-desc"><%= a.description %></p>
         </div>
         <div class="card-foot">
